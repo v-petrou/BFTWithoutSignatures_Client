@@ -1,7 +1,7 @@
 #!/bin/bash
 
 N=10
-CLIENTS=1
+CLIENTS=2
 SCEN=0
 
 go install BFTWithoutSignatures_Client

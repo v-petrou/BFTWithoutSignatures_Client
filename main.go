@@ -1,6 +1,7 @@
 package main
 
 import (
+	"BFTWithoutSignatures_Client/app"
 	"BFTWithoutSignatures_Client/config"
 	"BFTWithoutSignatures_Client/logger"
 	"BFTWithoutSignatures_Client/messenger"
@@ -33,11 +34,6 @@ func initializer(id int, n int, clients int, scenario config.Scenario) {
 	go messenger.TransmitRequests()
 
 	cleanup()
-
-	/* ------------------- Testing ------------------- */
-	messenger.SendRequest('A', 4)
-
-	messenger.SendRequest('B', 8)
 }
 
 func cleanup() {
@@ -69,6 +65,7 @@ func main() {
 		scenario := config.Scenario(tmp)
 
 		initializer(id, n, clients, scenario)
+		app.Client()
 
 		// To keep the client running
 		done := make(chan interface{})

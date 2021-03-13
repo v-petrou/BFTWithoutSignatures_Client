@@ -3,6 +3,7 @@ package messenger
 import (
 	"BFTWithoutSignatures_Client/config"
 	"BFTWithoutSignatures_Client/logger"
+	"BFTWithoutSignatures_Client/types"
 	"BFTWithoutSignatures_Client/variables"
 	"bytes"
 	"encoding/gob"
@@ -31,7 +32,7 @@ var (
 	}, 100)
 
 	// ResponseChannel - Channel to put the responses in
-	ResponseChannel = make(chan []byte)
+	ResponseChannel = make(chan types.Reply)
 )
 
 // InitializeMessenger - Initializes the 0MQ sockets
@@ -136,13 +137,14 @@ func Subscribe() {
 
 // Put server's response in ResponseChannel to be handled
 func handleResponse(msg []byte) {
-	var message []byte
+	var message types.Reply
 	buffer := bytes.NewBuffer(msg)
 	decoder := gob.NewDecoder(buffer)
 	err := decoder.Decode(&message)
 	if err != nil {
 		logger.ErrLogger.Fatal(err)
 	}
-	logger.OutLogger.Println("RECEIVED response from server", message)
+
+	logger.OutLogger.Println("RECEIVED REP from", message.From)
 	ResponseChannel <- message
 }
