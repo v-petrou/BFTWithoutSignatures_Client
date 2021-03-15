@@ -7,7 +7,7 @@ var (
 	// F - Number of faulty processors
 	F int
 
-	// ID - This processor's id.
+	// ID - This client's id.
 	ID int
 
 	// Clients - Size of Clients Set

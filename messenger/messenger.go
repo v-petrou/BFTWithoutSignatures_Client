@@ -7,6 +7,7 @@ import (
 	"BFTWithoutSignatures_Client/variables"
 	"bytes"
 	"encoding/gob"
+	"time"
 
 	"github.com/pebbe/zmq4"
 )
@@ -26,10 +27,7 @@ var (
 // Channels for messages
 var (
 	// RequestChannel - Channel to put the requests in
-	RequestChannel = make(chan struct {
-		Message rune
-		To      int
-	}, 100)
+	RequestChannel = make(map[int]chan rune, 100)
 
 	// ResponseChannel - Channel to put the responses in
 	ResponseChannel = make(chan types.Reply)
@@ -81,6 +79,9 @@ func InitializeMessenger() {
 		}
 		ResponseSockets[i].SetSubscribe("")
 		logger.OutLogger.Println("Response from Server", i, "on", responseAddr)
+
+		// Init request channel
+		RequestChannel[i] = make(chan rune)
 	}
 
 	logger.OutLogger.Print("-----------------------------------------\n\n")
@@ -88,34 +89,37 @@ func InitializeMessenger() {
 
 // SendRequest - Puts the messages in the request channel to be transmitted
 func SendRequest(message rune, to int) {
-	RequestChannel <- struct {
-		Message rune
-		To      int
-	}{Message: message, To: to}
+	t := time.NewTicker(150 * time.Millisecond)
+	select {
+	case RequestChannel[to] <- message:
+	case <-t.C:
+	}
 }
 
 // TransmitRequests - Transmits the requests to the server [go started from main]
 func TransmitRequests() {
-	for message := range RequestChannel {
-		to := message.To
-		msg := message.Message
-		w := new(bytes.Buffer)
-		encoder := gob.NewEncoder(w)
-		err := encoder.Encode(msg)
-		if err != nil {
-			logger.ErrLogger.Fatal(err)
-		}
+	for i := 0; i < variables.N; i++ {
+		go func(i int) { // Initializes them with a goroutine and waits forever
+			for message := range RequestChannel[i] {
+				w := new(bytes.Buffer)
+				encoder := gob.NewEncoder(w)
+				err := encoder.Encode(message)
+				if err != nil {
+					logger.ErrLogger.Fatal(err)
+				}
 
-		_, err = ServerSockets[to].SendBytes(w.Bytes(), 0)
-		if err != nil {
-			logger.ErrLogger.Fatal(err)
-		}
+				_, err = ServerSockets[i].SendBytes(w.Bytes(), 0)
+				if err != nil {
+					logger.ErrLogger.Fatal(err)
+				}
 
-		_, err = ServerSockets[to].Recv(0)
-		if err != nil {
-			logger.ErrLogger.Fatal(err)
-		}
-		logger.OutLogger.Println("SENT", message.Message, "to", to)
+				_, err = ServerSockets[i].Recv(0)
+				if err != nil {
+					logger.ErrLogger.Fatal(err)
+				}
+				logger.OutLogger.Println("SENT", message, "to", i)
+			}
+		}(i)
 	}
 }
 

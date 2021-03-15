@@ -1,6 +1,7 @@
 package app
 
 import (
+	"BFTWithoutSignatures_Client/logger"
 	"BFTWithoutSignatures_Client/messenger"
 	"BFTWithoutSignatures_Client/variables"
 	"bytes"
@@ -37,8 +38,7 @@ func Client() {
 			}
 			replies[message.Id][message.From] = message.Value
 
-			// Count the replies with the same ID and if more than f+1 with the same value,
-			// add this to the array.
+			// Call countReplies and if more than f+1 with the same value, add to the array.
 			count, dict := countReplies(replies[message.Id])
 			for k, v := range count {
 				if v >= (variables.F+1) && !ack[message.Id] {
@@ -48,13 +48,15 @@ func Client() {
 						array = append(array, val)
 					}
 
-					log.Println(variables.ID, "|", array)
+					logger.OutLogger.Print(message.Id, ". array-", string(array))
+					log.Print("\n", variables.ID, "|", string(array))
 				}
 			}
 		}
 	}()
 }
 
+// countReplies - Count the number of replies with the same ID from different servers
 func countReplies(vector map[int][][]byte) (map[int]int, map[int][][]byte) {
 	counter := make(map[int]int)
 	dict := make(map[int][][]byte)
