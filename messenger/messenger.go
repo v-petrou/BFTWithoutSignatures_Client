@@ -27,13 +27,13 @@ var (
 // Channels for messages
 var (
 	// RequestChannel - Channel to put the requests in
-	RequestChannel = make(map[int]chan rune, 100)
+	RequestChannel = make(map[int]chan types.ClientMessage, 100)
 
 	// ResponseChannel - Channel to put the responses in
 	ResponseChannel = make(chan types.Reply)
 )
 
-// InitializeMessenger - Initializes the 0MQ sockets
+// InitializeMessenger - Initializes the ZeroMQ sockets
 func InitializeMessenger() {
 	Context, err := zmq4.NewContext()
 	if err != nil {
@@ -81,18 +81,23 @@ func InitializeMessenger() {
 		logger.OutLogger.Println("Response from Server", i, "on", responseAddr)
 
 		// Init request channel
-		RequestChannel[i] = make(chan rune)
+		RequestChannel[i] = make(chan types.ClientMessage)
 	}
 
 	logger.OutLogger.Print("-----------------------------------------\n\n")
 }
 
 // SendRequest - Puts the messages in the request channel to be transmitted
-func SendRequest(message rune, to int) {
+func SendRequest(message types.ClientMessage, to int) {
 	t := time.NewTicker(150 * time.Millisecond)
-	select {
-	case RequestChannel[to] <- message:
-	case <-t.C:
+
+	if config.Scenario == "NORMAL" {
+		RequestChannel[to] <- message
+	} else {
+		select {
+		case RequestChannel[to] <- message:
+		case <-t.C:
+		}
 	}
 }
 
@@ -117,7 +122,7 @@ func TransmitRequests() {
 				if err != nil {
 					logger.ErrLogger.Fatal(err)
 				}
-				logger.OutLogger.Println("SENT", message, "to", i)
+				logger.OutLogger.Printf("SENT [%d, %c] to %d", message.Num, message.Value, i)
 			}
 		}(i)
 	}

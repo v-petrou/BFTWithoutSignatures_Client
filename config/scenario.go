@@ -1,18 +1,23 @@
 package config
 
-type Scenario int
+import "BFTWithoutSignatures_Client/logger"
 
-const (
-	NORMAL Scenario = iota
-	STALE_VIEWS
-	STALE_STATES
-	BYZANTINE_PRIM
-	STALE_REQUESTS
-	NON_SS
+var (
+	Scenario string
+
+	scenarios = map[int]string{
+		0: "NORMAL",
+		1: "CM",
+		2: "D",
+		3: "CD",
+	}
 )
 
-var TestCase = NORMAL
+func InitializeScenario(s int) {
+	if s >= len(scenarios) {
+		logger.ErrLogger.Println("Scenario out of bounds! Running with NORMAL scenario ...")
+		s = 0
+	}
 
-func InitializeScenario(scenario Scenario) {
-	TestCase = scenario
+	Scenario = scenarios[s]
 }

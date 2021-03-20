@@ -14,8 +14,9 @@ import (
 )
 
 // Initializer - Method that initializes all required processes
-func initializer(id int, n int, clients int, scenario config.Scenario) {
-	variables.Initialize(id, n, clients)
+func initializer(id int, n int, scenario int, rem int) {
+	variables.Initialize(id, n, rem)
+	logger.InitializeLogger("./logs/client/", "./logs/client/")
 
 	if variables.Remote {
 		config.InitializeIP()
@@ -24,9 +25,9 @@ func initializer(id int, n int, clients int, scenario config.Scenario) {
 	}
 	config.InitializeScenario(scenario)
 
-	logger.InitializeLogger("./logs/client/", "./logs/client/")
 	logger.OutLogger.Print(
-		"ID:", variables.ID, " | N:", variables.N, " | Clients:", variables.Clients, "\n\n",
+		"ID:", variables.ID, " | N:", variables.N, " | F:", variables.F,
+		" | Scenario:", config.Scenario, " | Remote:", variables.Remote, "\n\n",
 	)
 
 	messenger.InitializeMessenger()
@@ -62,17 +63,15 @@ func main() {
 	if len(args) == 4 {
 		id, _ := strconv.Atoi(args[0])
 		n, _ := strconv.Atoi(args[1])
-		clients, _ := strconv.Atoi(args[2])
-		tmp, _ := strconv.Atoi(args[3])
-		scenario := config.Scenario(tmp)
+		scenario, _ := strconv.Atoi(args[2])
+		remote, _ := strconv.Atoi(args[3])
 
-		initializer(id, n, clients, scenario)
+		initializer(id, n, scenario, remote)
 
-		// To keep the client running
-		done := make(chan interface{})
+		done := make(chan interface{}) // To keep the client running
 		<-done
 
 	} else {
-		log.Fatal("Arguments should be '<id> <n> <clients> <scenario>")
+		log.Fatal("Arguments should be '<id> <n> <scenario> <remote>'")
 	}
 }
