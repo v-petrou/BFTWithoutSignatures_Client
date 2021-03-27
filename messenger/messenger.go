@@ -84,20 +84,19 @@ func InitializeMessenger() {
 		RequestChannel[i] = make(chan types.ClientMessage)
 	}
 
-	logger.OutLogger.Print("-----------------------------------------\n\n")
+	logger.OutLogger.Print("------------------------------------------------\n\n")
 }
 
 // SendRequest - Puts the messages in the request channel to be transmitted
 func SendRequest(message types.ClientMessage, to int) {
-	t := time.NewTicker(150 * time.Millisecond)
-
-	if config.Scenario == "NORMAL" {
-		RequestChannel[to] <- message
-	} else {
+	if config.Scenario == "FAIL" {
+		timeout := time.NewTicker(500 * time.Millisecond)
 		select {
 		case RequestChannel[to] <- message:
-		case <-t.C:
+		case <-timeout.C:
 		}
+	} else {
+		RequestChannel[to] <- message
 	}
 }
 

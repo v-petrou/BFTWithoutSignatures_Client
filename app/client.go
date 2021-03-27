@@ -51,3 +51,6 @@ func Client() {
 		}
 	}()
 }
+
+// start := time.Now()
+// log.Println(variables.ID, "|", "time-", time.Since(start))
