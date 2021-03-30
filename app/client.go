@@ -17,8 +17,8 @@ func Client() {
 	replies := make(map[int]map[int]bool) // id, from
 	accepted := make(map[int]bool)        // if this id is accepted
 
-	randS := rand.New(rand.NewSource(time.Now().UnixNano()))
-	randR := rand.New(rand.NewSource(time.Now().UnixNano()))
+	randS := rand.New(rand.NewSource(int64(variables.ID + 3))) // Pseudo-Random server and rune
+	randR := rand.New(rand.NewSource(int64(variables.ID + 9)))
 	// END variables initialization
 
 	// Request Sender
