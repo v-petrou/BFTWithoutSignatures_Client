@@ -89,14 +89,10 @@ func InitializeMessenger() {
 
 // SendRequest - Puts the messages in the request channel to be transmitted
 func SendRequest(message types.ClientMessage, to int) {
-	if config.Scenario == "FAIL" {
-		timeout := time.NewTicker(500 * time.Millisecond)
-		select {
-		case RequestChannel[to] <- message:
-		case <-timeout.C:
-		}
-	} else {
-		RequestChannel[to] <- message
+	timeout := time.NewTicker(500 * time.Millisecond)
+	select {
+	case RequestChannel[to] <- message:
+	case <-timeout.C:
 	}
 }
 

@@ -27,7 +27,7 @@ func Client() {
 			message := types.NewClientMessage(variables.ID, num, runes[randR.Intn(len(runes))])
 			messenger.SendRequest(message, randS.Intn(variables.N))
 
-			time.Sleep(5 * time.Second)
+			time.Sleep(time.Duration(variables.ID+5) * time.Second)
 		}
 	}()
 

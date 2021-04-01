@@ -19,7 +19,7 @@ From Consensus to Atomic Broadcast: Time-Free Byzantine-Resistant Protocols with
 
 ## Installation
 ### Golang
-If you have not already installed [Golang](https://golang.org/doc/install) follow the instructions here.
+If you have not already installed **Golang** follow the instructions [here](https://golang.org/doc/install).
 ### Clone Repository
 ```bash
 cd ~/go/src/
@@ -29,10 +29,10 @@ git clone https://github.com/v-petrou/BFTWithoutSignatures_Client.git
 
 ## Execution
 ### Manually
-Open <Client> different terminals. In each terminal run:
+Open a different terminal for each client. In each terminal run:
 ```bash
 go install BFTWithoutSignatures_Client
-BFTWithoutSignatures_Client <ID> <N> <Scenario> <Remote>
+BFTWithoutSignatures_Client <ID> <N> <Remote>
 ```
 ### Script
 Adjust the script (BFTWithoutSignatures_Client/scripts/run.sh) and run:

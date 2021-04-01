@@ -14,7 +14,7 @@ import (
 )
 
 // Initializer - Method that initializes all required processes
-func initializer(id int, n int, scenario int, rem int) {
+func initializer(id int, n int, rem int) {
 	variables.Initialize(id, n, rem)
 	logger.InitializeLogger("./logs/client/", "./logs/client/")
 
@@ -23,11 +23,10 @@ func initializer(id int, n int, scenario int, rem int) {
 	} else {
 		config.InitializeLocal()
 	}
-	config.InitializeScenario(scenario)
 
 	logger.OutLogger.Print(
 		"ID:", variables.ID, " | N:", variables.N, " | F:", variables.F,
-		" | Scenario:", config.Scenario, " | Remote:", variables.Remote, "\n\n",
+		" | Remote:", variables.Remote, "\n\n",
 	)
 
 	messenger.InitializeMessenger()
@@ -35,8 +34,6 @@ func initializer(id int, n int, scenario int, rem int) {
 	messenger.TransmitRequests()
 
 	app.Client()
-
-	cleanup()
 }
 
 func cleanup() {
@@ -60,18 +57,18 @@ func cleanup() {
 
 func main() {
 	args := os.Args[1:]
-	if len(args) == 4 {
+	if len(args) == 3 {
 		id, _ := strconv.Atoi(args[0])
 		n, _ := strconv.Atoi(args[1])
-		scenario, _ := strconv.Atoi(args[2])
-		remote, _ := strconv.Atoi(args[3])
+		remote, _ := strconv.Atoi(args[2])
 
-		initializer(id, n, scenario, remote)
+		initializer(id, n, remote)
+		cleanup()
 
 		done := make(chan interface{}) // To keep the client running
 		<-done
 
 	} else {
-		log.Fatal("Arguments should be '<id> <n> <scenario> <remote>'")
+		log.Fatal("Arguments should be '<id> <n> <remote>'")
 	}
 }
