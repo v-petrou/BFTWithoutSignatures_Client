@@ -19,11 +19,15 @@ func Client() {
 
 	randS := rand.New(rand.NewSource(int64(variables.ID + 3))) // Pseudo-Random server and rune
 	randR := rand.New(rand.NewSource(int64(variables.ID + 9)))
+
+	times := make(map[int]time.Time)
 	// END variables initialization
 
 	// Request Sender
 	go func() {
 		for num := 1; num > 0; num++ {
+			times[num] = time.Now()
+
 			message := types.NewClientMessage(variables.ID, num, runes[randR.Intn(len(runes))])
 			messenger.SendRequest(message, randS.Intn(variables.N))
 
@@ -42,15 +46,14 @@ func Client() {
 			}
 			replies[message.Value][message.From] = true
 
-			// Call countReplies and if more than f+1 with the same value, accept the array.
+			// If more than f+1 with the same value, accept the array.
 			if len(replies[message.Value]) >= (variables.F+1) && !accepted[message.Value] {
 				accepted[message.Value] = true
-				logger.OutLogger.Print("RECEIVED ACK for ", message.Value, "\n")
+				logger.OutLogger.Print("RECEIVED ACK for ", message.Value, " [",
+					time.Since(times[message.Value]), "]\n")
+
 				log.Println(variables.ID, "|", "RECEIVED ACK for", message.Value)
 			}
 		}
 	}()
 }
-
-// start := time.Now()
-// log.Println(variables.ID, "|", "time-", time.Since(start))
