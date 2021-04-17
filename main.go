@@ -46,6 +46,13 @@ func cleanup() {
 		syscall.SIGQUIT)
 	go func() {
 		for range terminate {
+			sum := 0.0
+			for _, s := range app.ReceivedTime {
+				sum += float64(s.Seconds())
+			}
+			logger.OutLogger.Printf("\n\nAvg Operation Latency: %f\n\n",
+				(sum / float64(len(app.ReceivedTime))))
+
 			for i := 0; i < variables.N; i++ {
 				messenger.ServerSockets[i].Close()
 				messenger.ResponseSockets[i].Close()

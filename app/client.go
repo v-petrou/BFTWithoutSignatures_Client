@@ -5,37 +5,26 @@ import (
 	"BFTWithoutSignatures_Client/messenger"
 	"BFTWithoutSignatures_Client/types"
 	"BFTWithoutSignatures_Client/variables"
-	"log"
 	"math/rand"
 	"time"
 )
 
+var (
+	runes = []rune("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~")
+
+	replies  = make(map[int]map[int]bool) // id, from
+	accepted = make(map[int]bool)         // if this id is accepted
+
+	sentTime     = make(map[int]time.Time)
+	ReceivedTime = make(map[int]time.Duration)
+	num          = 1
+)
+
 func Client() {
-	// START variables initialization
-	runes := []rune("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~")
+	rand.Seed(int64((variables.ID + 3) * 9000)) // Pseudo-Random Generator
 
-	replies := make(map[int]map[int]bool) // id, from
-	accepted := make(map[int]bool)        // if this id is accepted
+	go sendRune()
 
-	randS := rand.New(rand.NewSource(int64(variables.ID + 3))) // Pseudo-Random server and rune
-	randR := rand.New(rand.NewSource(int64(variables.ID + 9)))
-
-	times := make(map[int]time.Time)
-	// END variables initialization
-
-	// Request Sender
-	go func() {
-		for num := 1; num > 0; num++ {
-			times[num] = time.Now()
-
-			message := types.NewClientMessage(variables.ID, num, runes[randR.Intn(len(runes))])
-			messenger.SendRequest(message, randS.Intn(variables.N))
-
-			time.Sleep(time.Duration(variables.ID+5) * time.Second)
-		}
-	}()
-
-	// Response Handler
 	go func() {
 		for message := range messenger.ResponseChannel {
 			if _, in := replies[message.Value][message.From]; in {
@@ -49,11 +38,25 @@ func Client() {
 			// If more than f+1 with the same value, accept the array.
 			if len(replies[message.Value]) >= (variables.F+1) && !accepted[message.Value] {
 				accepted[message.Value] = true
+				ReceivedTime[message.Value] = time.Since(sentTime[message.Value])
 				logger.OutLogger.Print("RECEIVED ACK for ", message.Value, " [",
-					time.Since(times[message.Value]), "]\n")
+					ReceivedTime[message.Value], "]\n")
 
-				log.Println(variables.ID, "|", "RECEIVED ACK for", message.Value)
+				if num <= 2 {
+					go sendRune()
+				}
 			}
 		}
 	}()
+}
+
+func sendRune() {
+	time.Sleep(time.Duration(variables.ID) * time.Second)
+
+	sentTime[num] = time.Now()
+
+	message := types.NewClientMessage(variables.ID, num, runes[rand.Intn(len(runes))])
+	go messenger.SendRequest(message, rand.Intn(variables.N))
+
+	num++
 }
