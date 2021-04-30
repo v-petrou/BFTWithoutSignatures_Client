@@ -89,7 +89,7 @@ func InitializeMessenger() {
 
 // SendRequest - Puts the messages in the request channel to be transmitted
 func SendRequest(message types.ClientMessage, to int) {
-	timeout := time.NewTicker(500 * time.Millisecond)
+	timeout := time.NewTicker(10 * time.Second)
 	select {
 	case RequestChannel[to] <- message:
 	case <-timeout.C:
@@ -149,6 +149,6 @@ func handleResponse(msg []byte) {
 		logger.ErrLogger.Fatal(err)
 	}
 
-	logger.OutLogger.Println("RECEIVED REP from", message.From)
+	logger.OutLogger.Println("RECEIVED REP from", message.From, "for", message.Value)
 	ResponseChannel <- message
 }

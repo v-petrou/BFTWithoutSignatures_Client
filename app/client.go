@@ -24,11 +24,12 @@ var (
 func Client() {
 	rand.Seed(int64((variables.ID + 3) * 9000)) // Pseudo-Random Generator
 
+	time.Sleep(time.Duration(variables.ID) * time.Second) // Wait before sending 1st request
 	go sendRune()
 
 	go func() {
 		for {
-			timeout := time.NewTicker(30 * time.Second)
+			timeout := time.NewTicker(45 * time.Second)
 			var message types.Reply
 
 			select {
@@ -56,6 +57,7 @@ func Client() {
 				if Rounds < 2 {
 					logger.OutLogger.Println("ABORTING and resending", Rounds)
 					Rounds--
+					replies[message.Value] = nil
 					go sendRune()
 				}
 			}
@@ -64,8 +66,6 @@ func Client() {
 }
 
 func sendRune() {
-	time.Sleep(time.Duration(variables.ID) * time.Second)
-
 	Rounds++
 	sentTime[Rounds] = time.Now()
 
