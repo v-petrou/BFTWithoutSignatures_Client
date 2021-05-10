@@ -32,7 +32,7 @@ git clone https://github.com/v-petrou/BFTWithoutSignatures_Client.git
 Open a different terminal for each client. In each terminal run:
 ```bash
 go install BFTWithoutSignatures_Client
-BFTWithoutSignatures_Client <ID> <N> <Remote>
+BFTWithoutSignatures_Client <ID> <N> <Clients> <Remote>
 ```
 ### Script
 Adjust the script (BFTWithoutSignatures_Client/scripts/run.sh) and run:

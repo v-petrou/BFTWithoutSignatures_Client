@@ -14,12 +14,12 @@ import (
 )
 
 // Initializer - Method that initializes all required processes
-func initializer(id int, n int, rem int) {
+func initializer(id int, n int, clients int, rem int) {
 	variables.Initialize(id, n, rem)
 	logger.InitializeLogger("./logs/client/", "./logs/client/")
 
 	if variables.Remote {
-		config.InitializeIP()
+		config.InitializeIP(clients)
 	} else {
 		config.InitializeLocal()
 	}
@@ -64,18 +64,19 @@ func cleanup() {
 
 func main() {
 	args := os.Args[1:]
-	if len(args) == 3 {
+	if len(args) == 4 {
 		id, _ := strconv.Atoi(args[0])
 		n, _ := strconv.Atoi(args[1])
-		remote, _ := strconv.Atoi(args[2])
+		clients, _ := strconv.Atoi(args[2])
+		remote, _ := strconv.Atoi(args[3])
 
-		initializer(id, n, remote)
+		initializer(id, n, clients, remote)
 		cleanup()
 
 		done := make(chan interface{}) // To keep the client running
 		<-done
 
 	} else {
-		log.Fatal("Arguments should be '<ID> <N> <Remote>'")
+		log.Fatal("Arguments should be '<ID> <N> <Clients> <Remote>'")
 	}
 }
