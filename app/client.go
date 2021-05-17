@@ -18,13 +18,14 @@ var (
 	// Client metrics regarding the experiment evaluation
 	sentTime  = make(map[int]time.Time)
 	OpLatency = time.Duration(0)
-	Num       = 0
+	num       = 0
+	Total     = 0
 )
 
 func Client() {
-	rand.Seed(int64((variables.ID + 3) * 9000)) // Pseudo-Random Generator
+	rand.Seed(int64((variables.ID + 3) * 9000))              // Pseudo-Random Generator
+	time.Sleep(time.Duration(variables.ID%10) * time.Second) // Wait a bit before sending 1st request
 
-	time.Sleep(time.Duration(variables.ID%5) * time.Second) // Wait a bit before sending 1st request
 	sendRune()
 
 	go func() {
@@ -41,10 +42,11 @@ func Client() {
 			if len(replies[message.Value]) >= (variables.F+1) && !accepted[message.Value] {
 				accepted[message.Value] = true
 				OpLatency += time.Since(sentTime[message.Value])
+				Total++
 				logger.OutLogger.Print("RECEIVED ACK for ", message.Value, " [",
 					time.Since(sentTime[message.Value]), "]\n")
 
-				if Num < 2 {
+				if num < 2 {
 					sendRune()
 				}
 			}
@@ -53,14 +55,18 @@ func Client() {
 }
 
 func sendRune() {
-	Num++
-	sentTime[Num] = time.Now()
-
-	message := types.NewClientMessage(variables.ID, Num, runes[rand.Intn(len(runes))])
+	num++
+	message := types.NewClientMessage(variables.ID, num, runes[rand.Intn(len(runes))])
 	randServer := rand.Intn(variables.N)
 
 	for i := 0; i < (variables.F + 1); i++ {
 		to := (randServer + i) % variables.N
-		messenger.SendRequest(message, to)
+		flag := messenger.SendRequest(message, to)
+		if !flag {
+			randServer = rand.Intn(variables.N)
+			i--
+		}
 	}
+
+	sentTime[num] = time.Now()
 }

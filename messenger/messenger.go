@@ -88,11 +88,14 @@ func InitializeMessenger() {
 }
 
 // SendRequest - Puts the messages in the request channel to be transmitted
-func SendRequest(message types.ClientMessage, to int) {
+func SendRequest(message types.ClientMessage, to int) bool {
 	timeout := time.NewTicker(10 * time.Second)
 	select {
 	case RequestChannel[to] <- message:
+		return true
 	case <-timeout.C:
+		<-RequestChannel[to]
+		return false
 	}
 }
 
